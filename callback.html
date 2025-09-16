@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google 인증 처리 중...</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+    <div class="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
+        <div id="processing" class="text-center">
+            <i class="fab fa-google text-5xl text-blue-500 mb-4"></i>
+            <h2 class="text-2xl font-bold mb-2">Google 인증 처리 중...</h2>
+            <p class="text-gray-600 mb-4">잠시만 기다려주세요</p>
+            <div class="flex justify-center">
+                <i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i>
+            </div>
+        </div>
+
+        <div id="success" class="text-center hidden">
+            <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
+            <h2 class="text-2xl font-bold mb-2">인증 성공!</h2>
+            <p class="text-gray-600 mb-4">Google Drive 연동이 완료되었습니다</p>
+            <button onclick="window.location.href='/'" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                대시보드로 돌아가기
+            </button>
+        </div>
+
+        <div id="error" class="text-center hidden">
+            <i class="fas fa-exclamation-circle text-5xl text-red-500 mb-4"></i>
+            <h2 class="text-2xl font-bold mb-2">인증 실패</h2>
+            <p class="text-gray-600 mb-4" id="errorMessage">인증 중 오류가 발생했습니다</p>
+            <button onclick="window.location.href='/'" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600">
+                대시보드로 돌아가기
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // OAuth 2.0 Implicit Flow 처리
+        function handleCallback() {
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+
+            // URL에서 토큰 추출
+            const accessToken = params.get('access_token');
+            const error = params.get('error');
+
+            const processingDiv = document.getElementById('processing');
+            const successDiv = document.getElementById('success');
+            const errorDiv = document.getElementById('error');
+
+            if (accessToken) {
+                // 토큰 저장
+                localStorage.setItem('googleAccessToken', accessToken);
+                localStorage.setItem('googleAuthTime', new Date().toISOString());
+
+                // 토큰 유효성 검증
+                validateToken(accessToken).then(valid => {
+                    if (valid) {
+                        processingDiv.classList.add('hidden');
+                        successDiv.classList.remove('hidden');
+
+                        // 3초 후 자동으로 대시보드로 이동
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 3000);
+                    } else {
+                        showError('토큰 검증 실패');
+                    }
+                }).catch(err => {
+                    showError('토큰 검증 중 오류: ' + err.message);
+                });
+            } else if (error) {
+                showError('인증 거부됨: ' + error);
+            } else {
+                // URL 파라미터가 없는 경우 (직접 접근)
+                showError('잘못된 접근입니다');
+            }
+        }
+
+        // 토큰 유효성 검증
+        async function validateToken(token) {
+            try {
+                const response = await fetch('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=' + token);
+                const data = await response.json();
+
+                if (response.ok && data.scope) {
+                    // 필요한 스코프가 있는지 확인
+                    const requiredScopes = [
+                        'https://www.googleapis.com/auth/drive.readonly',
+                        'https://www.googleapis.com/auth/userinfo.email'
+                    ];
+
+                    const grantedScopes = data.scope.split(' ');
+                    const hasRequiredScopes = requiredScopes.some(scope =>
+                        grantedScopes.includes(scope)
+                    );
+
+                    if (hasRequiredScopes) {
+                        // 사용자 정보 가져오기
+                        await getUserInfo(token);
+                        return true;
+                    } else {
+                        console.error('필요한 권한이 없습니다');
+                        return false;
+                    }
+                }
+                return false;
+            } catch (error) {
+                console.error('Token validation error:', error);
+                return false;
+            }
+        }
+
+        // 사용자 정보 가져오기
+        async function getUserInfo(token) {
+            try {
+                const response = await fetch('https://www.googleapis.com/oauth2/v1/userinfo?access_token=' + token);
+                const userInfo = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('googleUserEmail', userInfo.email);
+                    localStorage.setItem('googleUserName', userInfo.name || userInfo.email);
+                    console.log('User authenticated:', userInfo.email);
+                }
+            } catch (error) {
+                console.error('Failed to get user info:', error);
+            }
+        }
+
+        // 에러 표시
+        function showError(message) {
+            const processingDiv = document.getElementById('processing');
+            const errorDiv = document.getElementById('error');
+            const errorMessage = document.getElementById('errorMessage');
+
+            processingDiv.classList.add('hidden');
+            errorDiv.classList.remove('hidden');
+            errorMessage.textContent = message;
+        }
+
+        // 페이지 로드 시 콜백 처리
+        window.addEventListener('load', handleCallback);
+    </script>
+</body>
+</html>

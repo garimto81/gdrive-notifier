@@ -268,18 +268,24 @@
         </div>
     </footer>
 
+    <!-- Google OAuth Script -->
+    <script src="assets/google-auth.js"></script>
+
     <!-- JavaScript -->
     <script>
         // Configuration management
         const CONFIG = {
-            GITHUB_REPO: 'yourusername/gdrive-whatsapp-notifier',
+            GITHUB_REPO: 'garimto81/gdrive-notifier',
             GIST_ID: 'your-gist-id-for-logs',
             WORKER_URL: localStorage.getItem('workerUrl') || '',
             ACCESS_TOKEN: localStorage.getItem('accessToken') || ''
         };
 
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Google Auth 초기화
+            await GoogleAuth.init();
+
             loadDashboardData();
             initializeChart();
             setupEventListeners();
@@ -429,13 +435,8 @@
 
         // Connect to Google
         async function connectGoogle() {
-            // This would initiate OAuth flow
-            // For GitHub Pages, you'd redirect to Google OAuth and handle callback
-            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?` +
-                `client_id=YOUR_CLIENT_ID&` +
-                `redirect_uri=${window.location.origin}/callback.html&` +
-                `response_type=token&` +
-                `scope=https://www.googleapis.com/auth/drive.readonly`;
+            // GoogleAuth 모듈 사용
+            GoogleAuth.signIn();
         }
 
         // Save WhatsApp configuration
@@ -501,11 +502,13 @@
         }
 
         // Check connections status
-        function checkConnections() {
-            // Check Google connection
-            if (localStorage.getItem('googleToken')) {
+        async function checkConnections() {
+            // Check Google connection (GoogleAuth 모듈 사용)
+            const isGoogleAuth = await GoogleAuth.isAuthenticated();
+            if (isGoogleAuth) {
+                const userEmail = localStorage.getItem('googleUserEmail') || '연결됨';
                 document.getElementById('googleStatus').innerHTML =
-                    '<i class="fas fa-check-circle"></i> 연결됨';
+                    `<i class="fas fa-check-circle"></i> ${userEmail}`;
                 document.getElementById('googleStatus').className = 'text-green-500';
             }
 
