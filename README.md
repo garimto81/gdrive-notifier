@@ -17,6 +17,8 @@
 3. **Webhook** 모듈 추가 → **WhatsApp** 모듈 연결
 4. Webhook URL 복사
 
+> 📖 **자세한 설정 가이드**: [MAKE_SETUP_GUIDE.md](MAKE_SETUP_GUIDE.md) 참조
+
 ### 2단계: Google Apps Script 설정
 
 1. [Google Apps Script](https://script.google.com) 접속
