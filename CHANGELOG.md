@@ -4,6 +4,26 @@
 
 이 프로젝트는 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)을 따릅니다.
 
+## [1.0.1] - 2025-01-15
+
+### 🔧 버그 수정
+
+#### 수정됨
+- ✅ Google OAuth 400 오류 해결
+- ✅ 리다이렉트 URI 불일치 문제 수정
+- ✅ Client ID 설정 오류 해결
+- ✅ OAuth 스코프 권한 문제 수정
+
+#### 추가됨
+- 📄 OAuth 콜백 페이지 (`callback.html`)
+- 📦 Google Auth 헬퍼 모듈 (`assets/google-auth.js`)
+- 📚 상세한 OAuth 설정 가이드 (`docs/GOOGLE_OAUTH_SETUP.md`)
+
+#### 개선됨
+- 🔐 OAuth 인증 플로우 안정성 향상
+- 📱 사용자 친화적인 인증 UI
+- 🔍 에러 처리 및 디버깅 기능 강화
+
 ## [1.0.0] - 2025-01-15
 
 ### 🎉 첫 공식 릴리즈

@@ -1,6 +1,6 @@
 # 🌐 Google Drive to WhatsApp Notifier
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/garimto81/gdrive-notifier/releases)
+[![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](https://github.com/garimto81/gdrive-notifier/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen.svg)](https://garimto81.github.io/gdrive-notifier)
 

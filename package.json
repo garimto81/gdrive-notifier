@@ -1,6 +1,6 @@
 {
   "name": "gdrive-whatsapp-notifier",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Google Drive to WhatsApp automatic notification system",
   "main": "index.html",
   "scripts": {
