@@ -1,0 +1,29 @@
+name = "gdrive-whatsapp-webhook"
+main = "webhook.js"
+compatibility_date = "2024-01-01"
+
+[env.production]
+vars = { ENVIRONMENT = "production" }
+kv_namespaces = [
+  { binding = "GDRIVE_KV", id = "your-kv-namespace-id", preview_id = "your-preview-id" }
+]
+
+[env.staging]
+vars = { ENVIRONMENT = "staging" }
+
+# Secrets (set via wrangler secret or dashboard)
+# API_KEY
+# WHATSAPP_ACCESS_TOKEN
+# PHONE_NUMBER_ID
+# DEFAULT_RECIPIENTS
+# TEST_PHONE_NUMBER
+# ADMIN_PHONE
+
+# Cron triggers for scheduled tasks
+[triggers]
+crons = ["0 0 * * *"]  # Daily at midnight UTC
+
+# Routes
+routes = [
+  { pattern = "gdrive-webhook.your-domain.com", zone_id = "your-zone-id" }
+]

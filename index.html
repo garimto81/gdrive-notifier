@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive to WhatsApp Notifier</title>
+    <meta name="description" content="구글 드라이브 파일 공유 시 WhatsApp 자동 알림 시스템">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom Styles -->
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fab fa-google-drive text-3xl mr-3"></i>
+                    <span class="font-bold text-xl">GDrive-WhatsApp Notifier</span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#dashboard" class="hover:text-gray-200 transition">대시보드</a>
+                    <a href="#config" class="hover:text-gray-200 transition">설정</a>
+                    <a href="#logs" class="hover:text-gray-200 transition">로그</a>
+                    <a href="#help" class="hover:text-gray-200 transition">도움말</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Status Bar -->
+    <div id="statusBar" class="bg-green-500 text-white px-6 py-2 text-center">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span id="statusText">시스템 정상 작동 중</span>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-8">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-500 rounded-full text-white mr-4">
+                        <i class="fas fa-share-alt text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">오늘 공유</p>
+                        <p class="text-2xl font-bold" id="todayShares">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-500 rounded-full text-white mr-4">
+                        <i class="fab fa-whatsapp text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">전송 완료</p>
+                        <p class="text-2xl font-bold" id="sentMessages">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-yellow-500 rounded-full text-white mr-4">
+                        <i class="fas fa-users text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">활성 수신자</p>
+                        <p class="text-2xl font-bold" id="activeRecipients">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-purple-500 rounded-full text-white mr-4">
+                        <i class="fas fa-clock text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">평균 응답시간</p>
+                        <p class="text-2xl font-bold" id="avgResponseTime">0s</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Recent Activities -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800">
+                            <i class="fas fa-history mr-2"></i>최근 활동
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div id="recentActivities" class="space-y-4">
+                            <!-- Activities will be loaded here -->
+                            <div class="text-center text-gray-500 py-8">
+                                <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+                                <p>활동 내역을 불러오는 중...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="bg-white rounded-lg shadow mt-8">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800">
+                            <i class="fas fa-chart-line mr-2"></i>일주일 통계
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <canvas id="weeklyChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuration Panel -->
+            <div>
+                <!-- Quick Config -->
+                <div class="bg-white rounded-lg shadow mb-8">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800">
+                            <i class="fas fa-cog mr-2"></i>빠른 설정
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <!-- Google Connection -->
+                        <div class="mb-6">
+                            <label class="flex items-center justify-between mb-2">
+                                <span class="text-gray-700">Google 연동</span>
+                                <span id="googleStatus" class="text-green-500">
+                                    <i class="fas fa-check-circle"></i> 연결됨
+                                </span>
+                            </label>
+                            <button id="connectGoogle" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
+                                <i class="fab fa-google mr-2"></i>Google 계정 연결
+                            </button>
+                        </div>
+
+                        <!-- WhatsApp Connection -->
+                        <div class="mb-6">
+                            <label class="flex items-center justify-between mb-2">
+                                <span class="text-gray-700">WhatsApp 연동</span>
+                                <span id="whatsappStatus" class="text-yellow-500">
+                                    <i class="fas fa-exclamation-circle"></i> 설정 필요
+                                </span>
+                            </label>
+                            <button id="configWhatsApp" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 transition">
+                                <i class="fab fa-whatsapp mr-2"></i>WhatsApp 설정
+                            </button>
+                        </div>
+
+                        <!-- Test Notification -->
+                        <div>
+                            <button id="testNotification" class="w-full bg-purple-500 text-white py-2 rounded hover:bg-purple-600 transition">
+                                <i class="fas fa-bell mr-2"></i>테스트 알림 전송
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recipients List -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800">
+                            <i class="fas fa-user-friends mr-2"></i>수신자 관리
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div id="recipientsList" class="space-y-3">
+                            <!-- Recipients will be loaded here -->
+                        </div>
+                        <button id="addRecipient" class="w-full mt-4 border-2 border-dashed border-gray-300 text-gray-500 py-2 rounded hover:border-gray-400 hover:text-gray-600 transition">
+                            <i class="fas fa-plus mr-2"></i>수신자 추가
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Modal -->
+    <div id="configModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">WhatsApp 설정</h3>
+            <form id="whatsappConfigForm">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Access Token</label>
+                    <input type="text" id="accessToken" class="w-full border rounded px-3 py-2" placeholder="EAA...">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Phone Number ID</label>
+                    <input type="text" id="phoneNumberId" class="w-full border rounded px-3 py-2" placeholder="1234567890">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Webhook URL (Cloudflare Worker)</label>
+                    <input type="text" id="webhookUrl" class="w-full border rounded px-3 py-2" placeholder="https://your-worker.workers.dev">
+                </div>
+                <div class="flex space-x-3">
+                    <button type="submit" class="flex-1 bg-green-500 text-white py-2 rounded hover:bg-green-600">저장</button>
+                    <button type="button" id="closeModal" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-8">
+            <div class="flex flex-wrap justify-between">
+                <div class="w-full md:w-1/3 mb-6 md:mb-0">
+                    <h4 class="font-bold mb-2">GDrive-WhatsApp Notifier</h4>
+                    <p class="text-gray-400">구글 드라이브와 WhatsApp을 연결하는 스마트한 방법</p>
+                </div>
+                <div class="w-full md:w-1/3 mb-6 md:mb-0">
+                    <h4 class="font-bold mb-2">Quick Links</h4>
+                    <ul class="text-gray-400">
+                        <li><a href="https://github.com/yourusername/gdrive-whatsapp-notifier" class="hover:text-white">GitHub</a></li>
+                        <li><a href="docs/SETUP.md" class="hover:text-white">설치 가이드</a></li>
+                        <li><a href="docs/API.md" class="hover:text-white">API 문서</a></li>
+                    </ul>
+                </div>
+                <div class="w-full md:w-1/3">
+                    <h4 class="font-bold mb-2">Status</h4>
+                    <div class="flex items-center text-gray-400">
+                        <span class="inline-block w-2 h-2 bg-green-500 rounded-full mr-2 pulse-dot"></span>
+                        모든 시스템 정상 작동 중
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 GDrive-WhatsApp Notifier. MIT License.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Configuration management
+        const CONFIG = {
+            GITHUB_REPO: 'yourusername/gdrive-whatsapp-notifier',
+            GIST_ID: 'your-gist-id-for-logs',
+            WORKER_URL: localStorage.getItem('workerUrl') || '',
+            ACCESS_TOKEN: localStorage.getItem('accessToken') || ''
+        };
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            initializeChart();
+            setupEventListeners();
+            checkConnections();
+        });
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Simulate loading data (replace with actual API calls)
+                updateStats();
+                loadRecentActivities();
+                loadRecipients();
+            } catch (error) {
+                console.error('Dashboard loading error:', error);
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            // These would come from your actual data source
+            document.getElementById('todayShares').textContent = '12';
+            document.getElementById('sentMessages').textContent = '48';
+            document.getElementById('activeRecipients').textContent = '5';
+            document.getElementById('avgResponseTime').textContent = '2.3s';
+        }
+
+        // Load recent activities
+        function loadRecentActivities() {
+            const activities = [
+                { time: '5분 전', file: '프로젝트_보고서.pdf', user: 'user@example.com', status: 'success' },
+                { time: '15분 전', file: '회의록_2025.docx', user: 'team@example.com', status: 'success' },
+                { time: '1시간 전', file: '디자인_시안.fig', user: 'design@example.com', status: 'failed' }
+            ];
+
+            const container = document.getElementById('recentActivities');
+            container.innerHTML = activities.map(activity => `
+                <div class="flex items-center justify-between p-3 border rounded hover:bg-gray-50">
+                    <div class="flex items-center">
+                        <i class="fas fa-file text-blue-500 mr-3"></i>
+                        <div>
+                            <p class="font-medium">${activity.file}</p>
+                            <p class="text-sm text-gray-500">${activity.user} • ${activity.time}</p>
+                        </div>
+                    </div>
+                    <span class="px-2 py-1 text-xs rounded ${
+                        activity.status === 'success'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                    }">
+                        ${activity.status === 'success' ? '전송 완료' : '전송 실패'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        // Load recipients
+        function loadRecipients() {
+            const recipients = [
+                { name: '김철수', phone: '+82101234****', active: true },
+                { name: '이영희', phone: '+82105678****', active: true },
+                { name: '박민수', phone: '+82109012****', active: false }
+            ];
+
+            const container = document.getElementById('recipientsList');
+            container.innerHTML = recipients.map(recipient => `
+                <div class="flex items-center justify-between p-2 border rounded">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-circle text-gray-400 mr-2"></i>
+                        <div>
+                            <p class="text-sm font-medium">${recipient.name}</p>
+                            <p class="text-xs text-gray-500">${recipient.phone}</p>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer" ${recipient.active ? 'checked' : ''}>
+                        <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+                    </label>
+                </div>
+            `).join('');
+        }
+
+        // Initialize Chart
+        function initializeChart() {
+            const ctx = document.getElementById('weeklyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['월', '화', '수', '목', '금', '토', '일'],
+                    datasets: [{
+                        label: '파일 공유',
+                        data: [12, 19, 8, 15, 22, 18, 10],
+                        borderColor: 'rgb(99, 102, 241)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: '알림 전송',
+                        data: [10, 18, 7, 14, 20, 16, 9],
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Connect Google
+            document.getElementById('connectGoogle').addEventListener('click', connectGoogle);
+
+            // Configure WhatsApp
+            document.getElementById('configWhatsApp').addEventListener('click', () => {
+                document.getElementById('configModal').classList.remove('hidden');
+                document.getElementById('configModal').classList.add('flex');
+            });
+
+            // Close modal
+            document.getElementById('closeModal').addEventListener('click', () => {
+                document.getElementById('configModal').classList.add('hidden');
+                document.getElementById('configModal').classList.remove('flex');
+            });
+
+            // Save WhatsApp config
+            document.getElementById('whatsappConfigForm').addEventListener('submit', saveWhatsAppConfig);
+
+            // Test notification
+            document.getElementById('testNotification').addEventListener('click', sendTestNotification);
+
+            // Add recipient
+            document.getElementById('addRecipient').addEventListener('click', addRecipient);
+        }
+
+        // Connect to Google
+        async function connectGoogle() {
+            // This would initiate OAuth flow
+            // For GitHub Pages, you'd redirect to Google OAuth and handle callback
+            window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?` +
+                `client_id=YOUR_CLIENT_ID&` +
+                `redirect_uri=${window.location.origin}/callback.html&` +
+                `response_type=token&` +
+                `scope=https://www.googleapis.com/auth/drive.readonly`;
+        }
+
+        // Save WhatsApp configuration
+        async function saveWhatsAppConfig(e) {
+            e.preventDefault();
+
+            const accessToken = document.getElementById('accessToken').value;
+            const phoneNumberId = document.getElementById('phoneNumberId').value;
+            const webhookUrl = document.getElementById('webhookUrl').value;
+
+            // Save to localStorage (in production, use GitHub Secrets via API)
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('phoneNumberId', phoneNumberId);
+            localStorage.setItem('workerUrl', webhookUrl);
+
+            // Update status
+            document.getElementById('whatsappStatus').innerHTML =
+                '<i class="fas fa-check-circle"></i> 연결됨';
+            document.getElementById('whatsappStatus').className = 'text-green-500';
+
+            // Close modal
+            document.getElementById('configModal').classList.add('hidden');
+
+            showNotification('WhatsApp 설정이 저장되었습니다', 'success');
+        }
+
+        // Send test notification
+        async function sendTestNotification() {
+            try {
+                const response = await fetch(CONFIG.WORKER_URL + '/test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + CONFIG.ACCESS_TOKEN
+                    },
+                    body: JSON.stringify({
+                        message: '테스트 알림입니다',
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                if (response.ok) {
+                    showNotification('테스트 알림이 전송되었습니다', 'success');
+                } else {
+                    throw new Error('전송 실패');
+                }
+            } catch (error) {
+                showNotification('알림 전송 실패: ' + error.message, 'error');
+            }
+        }
+
+        // Add new recipient
+        function addRecipient() {
+            const name = prompt('수신자 이름:');
+            const phone = prompt('WhatsApp 번호 (국가코드 포함):');
+
+            if (name && phone) {
+                // Save to configuration
+                // In production, this would be saved via API
+                showNotification(`${name} 님이 추가되었습니다`, 'success');
+                loadRecipients(); // Reload list
+            }
+        }
+
+        // Check connections status
+        function checkConnections() {
+            // Check Google connection
+            if (localStorage.getItem('googleToken')) {
+                document.getElementById('googleStatus').innerHTML =
+                    '<i class="fas fa-check-circle"></i> 연결됨';
+                document.getElementById('googleStatus').className = 'text-green-500';
+            }
+
+            // Check WhatsApp connection
+            if (localStorage.getItem('accessToken')) {
+                document.getElementById('whatsappStatus').innerHTML =
+                    '<i class="fas fa-check-circle"></i> 연결됨';
+                document.getElementById('whatsappStatus').className = 'text-green-500';
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const statusBar = document.getElementById('statusBar');
+            const statusText = document.getElementById('statusText');
+
+            statusText.textContent = message;
+            statusBar.className = type === 'success'
+                ? 'bg-green-500 text-white px-6 py-2 text-center'
+                : 'bg-red-500 text-white px-6 py-2 text-center';
+
+            setTimeout(() => {
+                statusBar.className = 'bg-green-500 text-white px-6 py-2 text-center';
+                statusText.textContent = '시스템 정상 작동 중';
+            }, 5000);
+        }
+
+        // Auto-refresh dashboard every 30 seconds
+        setInterval(loadDashboardData, 30000);
+    </script>
+</body>
+</html>

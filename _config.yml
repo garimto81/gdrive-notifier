@@ -1,0 +1,37 @@
+# Jekyll configuration for GitHub Pages
+theme: null
+title: Google Drive to WhatsApp Notifier
+description: 구글 드라이브 파일 공유 시 WhatsApp 자동 알림 시스템
+
+# Build settings
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Exclude files from build
+exclude:
+  - workers/
+  - scripts/
+  - src/
+  - config/
+  - tests/
+  - node_modules/
+  - package.json
+  - requirements.txt
+  - Dockerfile
+  - .env
+  - .env.example
+  - README_ONLINE.md
+
+# Include specific files
+include:
+  - index.html
+  - config.html
+  - logs.html
+  - 404.html
+  - assets/
+  - docs/
+
+# Custom variables
+google_analytics: UA-XXXXXXXX-X
+github_repo: yourusername/gdrive-whatsapp-notifier

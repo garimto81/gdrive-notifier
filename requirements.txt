@@ -1,0 +1,51 @@
+# FastAPI 및 웹 서버
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# 비동기 HTTP 클라이언트
+aiohttp==3.9.1
+httpx==0.25.2
+
+# WhatsApp API
+twilio==8.11.0  # Twilio 옵션
+
+# Google API
+google-auth==2.26.1
+google-auth-oauthlib==1.2.0
+google-auth-httplib2==0.2.0
+google-api-python-client==2.111.0
+
+# 데이터베이스
+sqlalchemy==2.0.25
+aiosqlite==0.19.0
+alembic==1.13.1
+
+# 환경 변수 및 설정
+python-dotenv==1.0.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# 유틸리티
+python-dateutil==2.8.2
+pytz==2023.3
+pyyaml==6.0.1
+
+# 로깅 및 모니터링
+loguru==0.7.2
+
+# 테스트
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+httpx==0.25.2  # 테스트용
+
+# 보안
+cryptography==41.0.7
+pyjwt==2.8.0
+
+# 개발 도구
+black==23.12.1
+flake8==7.0.0
+mypy==1.8.0
+pre-commit==3.6.0

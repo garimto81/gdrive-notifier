@@ -1,0 +1,34 @@
+{
+  "name": "gdrive-whatsapp-notifier",
+  "version": "1.0.0",
+  "description": "Google Drive to WhatsApp automatic notification system",
+  "main": "index.html",
+  "scripts": {
+    "deploy": "git push origin main",
+    "deploy:worker": "wrangler publish",
+    "test": "echo \"No tests configured\"",
+    "version": "npm version",
+    "release": "npm run deploy && npm run deploy:worker"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/garimto81/gdrive-notifier.git"
+  },
+  "keywords": [
+    "google-drive",
+    "whatsapp",
+    "notification",
+    "automation",
+    "cloudflare-workers",
+    "github-pages"
+  ],
+  "author": "garimto81",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/garimto81/gdrive-notifier/issues"
+  },
+  "homepage": "https://garimto81.github.io/gdrive-notifier",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
