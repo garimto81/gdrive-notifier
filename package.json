@@ -1,0 +1,20 @@
+{
+  "name": "gdrive-whatsapp-simple",
+  "version": "2.0.0",
+  "description": "최소 기능만 있는 구글 드라이브 WhatsApp 알림",
+  "main": "index.html",
+  "keywords": [
+    "google-drive",
+    "whatsapp",
+    "notification",
+    "simple",
+    "minimal"
+  ],
+  "author": "garimto81",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/garimto81/gdrive-notifier.git"
+  },
+  "homepage": "https://garimto81.github.io/gdrive-notifier"
+}
